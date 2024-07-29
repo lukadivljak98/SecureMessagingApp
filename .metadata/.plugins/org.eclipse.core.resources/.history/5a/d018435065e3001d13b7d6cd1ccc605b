@@ -1,0 +1,65 @@
+body {
+	font-family: Arial;
+	font-size: 10px;
+}
+
+h1 {
+	font-size: 15px;
+}
+
+h2 {
+	font-size: 12px;
+}
+
+h3 {
+	font-size: 11px;
+}
+
+a {
+	color: blue;
+	font-style: italic;
+	font-weight: normal;
+}
+
+a:hover {
+	font-weight: bold;
+}
+
+.container {
+	display: flex;
+}
+
+.users-list {
+	width: 20%;
+	padding-right: 10px;
+}
+
+.chat-area {
+	width: 80%;
+	height: 87vh;
+	padding-left: 10px;
+	border-left: 1px solid #ccc;
+}
+
+.messages {
+	max-height: 80%;
+	overflow-y: auto;
+}
+
+.input-section {
+	position: fixed;
+	bottom: 0;
+	width: calc(80% - 20px);
+	display: flex;
+	margin: 15px;
+	padding: 5px;
+}
+
+.input-section form {
+	display: flex;
+	flex-direction: row;
+}
+
+.input-section input {
+	
+}

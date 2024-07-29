@@ -1,0 +1,57 @@
+package net.etfbl.mq;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.DeliverCallback;
+
+import net.etfbl.beans.UserBean;
+
+public class QueueListener {
+	
+	public static String startQueueListener(Channel channel, UserBean userBean) {
+	    String[] consumerTagHolder = new String[1];
+	    new Thread(() -> {
+	        try {
+	            String queueName = "recipient." + userBean.getUser().getId();
+	            channel.queueDeclare(queueName, false, false, false, null);
+
+	            Map<String, List<SegmentObject>> receivedSegmentsMap = new ConcurrentHashMap<>();
+	            
+	            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+	                String messageJson = new String(delivery.getBody(), StandardCharsets.UTF_8);
+	                SegmentObject segmentObject = JsonUtil.jsonToObject(messageJson, SegmentObject.class);
+	                
+	                receivedSegmentsMap.putIfAbsent(segmentObject.getMessageId(), new ArrayList<>());
+	                receivedSegmentsMap.get(segmentObject.getMessageId()).add(segmentObject);
+	                
+	                if (receivedSegmentsMap.get(segmentObject.getMessageId()).size() == segmentObject.getTotalSegments()) {
+	                    List<SegmentObject> messageSegments = receivedSegmentsMap.get(segmentObject.getMessageId());
+	                    messageSegments.sort(Comparator.comparingInt(SegmentObject::getSegmentIndex));
+
+	                    StringBuilder messageBuilder = new StringBuilder();
+	                    for (SegmentObject segment : messageSegments) {
+	                        messageBuilder.append(segment.getSegmentText());
+	                    }
+
+	                    String reconstructedMessage = messageBuilder.toString();
+	                }
+	            };
+
+	            String consumerTag = channel.basicConsume(queueName, true, deliverCallback, cancelConsumerTag -> {});
+	            consumerTagHolder[0] = consumerTag;
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }).start();
+
+	    return consumerTagHolder[0];
+	}
+
+}

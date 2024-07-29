@@ -1,0 +1,18 @@
+package net.etfbl.server;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+public class MessageServerInitializer implements ServletContextListener {
+
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+        // Start the MessageServer instances here
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+        // Perform cleanup operations here, if necessary
+    }
+}
+

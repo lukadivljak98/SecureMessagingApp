@@ -1,0 +1,18 @@
+package net.etfbl.beans;
+
+import java.io.Serializable;
+
+import net.etfbl.dao.KeyDAO;
+import net.etfbl.dto.Key;
+
+public class KeyBean implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
+	public boolean saveKey(Key key) {
+		if(KeyDAO.saveKey(key))
+			return true;
+		else return false;
+	}
+
+}

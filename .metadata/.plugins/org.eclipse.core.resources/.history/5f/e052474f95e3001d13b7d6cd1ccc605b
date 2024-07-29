@@ -1,0 +1,27 @@
+package net.etfbl.mq;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class MessageUtil {
+	
+	public static List<String> divideMessage(String message) {
+        Random random = new Random();
+        int M = random.nextInt(8) + 3; // Generates a random number between 3 and 10
+
+        int messageLength = message.length();
+        int segmentSize = messageLength / M;
+        List<String> segments = new ArrayList<>();
+
+        for (int i = 0; i < M; i++) {
+            int start = i * segmentSize;
+            int end = (i == M - 1) ? messageLength : (i + 1) * segmentSize;
+            String segment = message.substring(start, end);
+            segments.add(segment);
+        }
+
+        return segments;
+    }
+
+}

@@ -1,0 +1,8 @@
+INDEX VERSION 1.131+C:\Users\LukaDivljak\Desktop\MessagingApp\.metadata\.plugins\org.eclipse.jdt.core
+3572908438.index
+2865955459.index
+2877066517.index
+4154886661.index
+3079826178.index
+2576594540.index
+1865797976.index

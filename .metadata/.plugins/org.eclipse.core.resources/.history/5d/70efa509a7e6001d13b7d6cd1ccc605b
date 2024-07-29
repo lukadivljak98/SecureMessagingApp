@@ -1,0 +1,5 @@
+package net.etfbl.dto;
+
+public class Key {
+
+}

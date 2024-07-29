@@ -1,0 +1,5 @@
+package net.etfbl.controller;
+
+public class ChatEndpoint {
+
+}

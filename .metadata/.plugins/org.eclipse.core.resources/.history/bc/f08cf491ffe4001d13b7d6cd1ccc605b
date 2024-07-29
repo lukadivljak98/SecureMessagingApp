@@ -1,0 +1,36 @@
+package net.etfbl.controller;
+
+import javax.websocket.*;
+import javax.websocket.server.ServerEndpoint;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
+@ServerEndpoint("/chat")
+public class ChatEndpoint {
+    private static final Set<ChatEndpoint> chatEndpoints = new HashSet<>();
+    private Session session;
+
+    @OnOpen
+    public void onOpen(Session session) {
+        this.session = session;
+        chatEndpoints.add(this);
+    }
+
+    @OnClose
+    public void onClose(Session session) {
+        chatEndpoints.remove(this);
+    }
+
+    public static void sendMessageToAll(String message) {
+        chatEndpoints.forEach(endpoint -> {
+            try {
+                endpoint.session.getBasicRemote().sendText(message);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+}
+
+

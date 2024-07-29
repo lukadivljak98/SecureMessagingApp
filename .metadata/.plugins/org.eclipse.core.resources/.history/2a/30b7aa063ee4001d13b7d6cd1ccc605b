@@ -1,0 +1,36 @@
+package net.etfbl.mq;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.DeliverCallback;
+
+import net.etfbl.beans.UserBean;
+
+public class QueueListener {
+	
+	public static String startQueueListener(Channel channel, UserBean userBean) {
+	    String[] consumerTagHolder = new String[1];
+	    new Thread(() -> {
+	        try {
+	            String queueName = "recipient." + userBean.getUser().getId();
+	            channel.queueDeclare(queueName, false, false, false, null);
+
+	            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+	                String messageJson = new String(delivery.getBody(), StandardCharsets.UTF_8);
+	                SegmentObject segmentObject = JsonUtil.jsonToObject(messageJson, SegmentObject.class);
+	                // Process the received message segment here
+	            };
+
+	            String consumerTag = channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {});
+	            consumerTagHolder[0] = consumerTag;
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }).start();
+
+	    return consumerTagHolder[0];
+	}
+
+}

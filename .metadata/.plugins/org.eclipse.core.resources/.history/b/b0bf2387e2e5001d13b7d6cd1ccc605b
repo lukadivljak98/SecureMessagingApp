@@ -1,0 +1,141 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@page import="net.etfbl.dto.User"%>
+<%@page import="net.etfbl.beans.UserBean"%>
+<%@page import="java.util.List"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="java.util.Map"%>
+<%@page import="java.util.Comparator"%>
+<%@page import="net.etfbl.mq.Message"%>
+<%@page import="java.time.format.DateTimeFormatter"%>
+<jsp:useBean id="userBean" type="net.etfbl.beans.UserBean"
+	scope="session" />
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="styles/style.css" type="text/css" rel="stylesheet">
+<title>Messaging App</title>
+</head>
+<body>
+	<h1>ETF Anonymous Messaging App</h1>
+	<a href="?action=logout">Odjava sa sistema</a>
+	<hr />
+	<div class="container">
+		<div class="users-list">
+			<h2>Users</h2>
+			<ul>
+				<%
+				for (User user : userBean.getAll()) {
+				%>
+				<li><a
+					href="?action=recipientSelected&recipientId=<%=user.getId()%>"><%=user.getUsername()%></a></li>
+				<%
+				}
+				%>
+			</ul>
+		</div>
+		<div class="chat-area">
+			<h2>Chat</h2>
+			<div class="messages">
+				<%
+				Map<Integer, List<Message>> recipientMessages = (Map<Integer, List<Message>>) request.getSession().getAttribute("recipientMessages");
+				Map<Integer, List<Message>> senderMessages = (Map<Integer, List<Message>>) request.getSession().getAttribute("senderMessages");
+				List<Message> messages = new ArrayList<>();
+				if (recipientMessages != null && userBean.getRecipient() != null) {
+				    List<Message> receivedMessages = recipientMessages.get(userBean.getRecipient().getId());
+				    if (receivedMessages != null) {
+				        messages.addAll(receivedMessages);
+				    }
+				}
+				if (senderMessages != null && userBean.getRecipient() != null) {
+				    List<Message> sentMessages = senderMessages.get(userBean.getRecipient().getId());
+				    if (sentMessages != null) {
+				        messages.addAll(sentMessages);
+				    }
+				}
+				messages.sort(Comparator.comparing(Message::getTimeSent));
+				if (!messages.isEmpty()) {
+				    for (Message message : messages) {
+
+				%>
+				<div
+					class="message <%=message.getSenderUsername().equals(userBean.getUser().getUsername()) ? "sent" : "received"%>">
+					<p class="sender-info"><%=message.getSenderUsername()%>
+						<span class="time-sent"><%=message.getTimeSent().format(DateTimeFormatter.ofPattern("HH:mm"))%></span>
+					</p>
+					<p class="message-text"><%=message.getMessageText()%></p>
+				</div>
+				<%
+				}
+				}
+				
+				%>
+
+			</div>
+
+			<div class="input-section">
+				<form action="?action=sendMessage" method="post">
+					<input type="text" name="message"
+						placeholder="Type your message..." style="width: 100%;">
+					<button type="submit">Send</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script>
+	async function fetchAndReconstructMessages() {
+	    let recipientId = '<%=userBean.getRecipient() != null ? userBean.getRecipient().getId() : -1 %>';
+	    if (recipientId === -1) return;
+
+	    try {
+	        let response = await fetch(`Controller?action=fetchSegments&recipientId=${recipientId}`);
+	        if (response.ok) {
+	            let segmentsData = await response.json();
+	            let messagesMap = new Map();
+
+	            for (let segment of segmentsData) {
+	                let messageId = segment.messageId;
+	                let messageSegments = messagesMap.get(messageId) || {
+	                    count: 0,
+	                    total: segment.totalSegments,
+	                    segments: []
+	                };
+
+	                messageSegments.count++;
+	                messageSegments.segments[segment.segmentNumber] = segment;
+
+	                if (messageSegments.count === messageSegments.total) {
+	                    let reconstructedMessage = messageSegments.segments.map(s => s.messageSegment).join('');
+	                    let messageData = {
+	                        messageText: reconstructedMessage,
+	                        senderUsername: segment.senderUsername,
+	                        timeSent: segment.timeSent
+	                    };
+
+	                    // Add the reconstructed message to the DOM
+	                    appendMessageToDOM(messageData);
+	                } else {
+	                    messagesMap.set(messageId, messageSegments);
+	                }
+	            }
+	        }
+	    } catch (error) {
+	        console.error('Error fetching segments:', error);
+	    }
+	}
+
+	function appendMessageToDOM(messageData) {
+	    let messagesElement = document.querySelector(".messages");
+	    let messageElement = document.createElement("div");
+	    messageElement.className = "message received";
+	    let timeSent = new Date(messageData.timeSent).toLocaleString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+	    messageElement.innerHTML = `<p class="message-sender">${messageData.senderUsername} <span class="message-time">(${timeSent})</span></p><p class="message-text">${messageData.messageText}</p>`;
+	    messagesElement.appendChild(messageElement);
+	}
+
+	setInterval(fetchAndReconstructMessages, 2000); // Fetch and reconstruct messages every 2 seconds
+
+	</script>
+</body>
+</html>

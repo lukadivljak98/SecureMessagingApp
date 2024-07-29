@@ -1,0 +1,5 @@
+package net.etfbl.server;
+
+public class MessageServer {
+
+}

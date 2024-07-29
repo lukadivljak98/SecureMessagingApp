@@ -1,0 +1,4 @@
+INDEX VERSION 1.4+C:\Users\LukaDivljak\Desktop\MessagingApp\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+3479412538.index
+2877066517.index
+2865955459.index

@@ -1,0 +1,53 @@
+body {
+	font-family: Arial;
+	font-size: 10px;
+}
+
+h1 {
+	font-size: 15px;
+}
+
+h2 {
+	font-size: 12px;
+}
+
+h3 {
+	font-size: 11px;
+}
+
+a {
+	color: blue;
+	font-style: italic;
+	font-weight: normal;
+}
+
+a:hover {
+	font-weight: bold;
+}
+
+.container {
+    display: flex;
+    position: relative; /* Add this line */
+    height: 100vh; /* Add this line */
+}
+
+.chat-area {
+    width: 80%;
+    padding-left: 10px;
+    display: flex; /* Add this line */
+    flex-direction: column; /* Add this line */
+}
+
+.messages {
+    max-height: 80%;
+    overflow-y: auto;
+    flex-grow: 1; /* Add this line */
+}
+
+.input-section {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    background-color: #ffffff;
+    width: calc(80% - 20px); /* Subtract padding */
+}
